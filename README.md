@@ -22,11 +22,14 @@ of each request. A `SessionStart` hook only makes sure the proxy is running.
 ## Install
 
 ```powershell
-git clone <repo> gearbox && cd gearbox
-python -m venv .venv
-.\.venv\Scripts\pip install -e .
-.\.venv\Scripts\gearbox install
+git clone https://github.com/MacTii/gearbox.git
+cd gearbox
+.\install.ps1
 ```
+
+`install.ps1` creates a venv, installs gearbox into it, and runs `gearbox install` (below).
+The repo is private, so this stays two commands rather than a single `irm | iex` one-liner -
+that would need the install script to be fetchable without authentication.
 
 `gearbox install`:
 1. Adds `env.ANTHROPIC_BASE_URL=http://127.0.0.1:8080` and a `SessionStart` hook to
