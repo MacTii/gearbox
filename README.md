@@ -3,8 +3,6 @@
 Automatic gear shifting for Claude Code: trivial prompts go to **Haiku**, everyday work to **Sonnet**,
 hard problems to **Opus**, per request, without you touching `/model`.
 
-Like [rtk](https://github.com/rtk-ai/rtk), it installs once and then runs in the background.
-
 ```
 you ──► Claude Code ──► gearbox (localhost:8080) ──► api.anthropic.com
                           │
@@ -33,8 +31,8 @@ that would need the install script to be fetchable without authentication.
 
 `gearbox install`:
 1. Adds `env.ANTHROPIC_BASE_URL=http://127.0.0.1:8080` and a `SessionStart` hook to
-   `~/.claude/settings.json`. Existing entries, such as the rtk hook, are kept, and the original
-   file is backed up to `settings.json.gearbox.bak`.
+   `~/.claude/settings.json`. Any existing entries (other hooks, env vars) are kept, and the
+   original file is backed up to `settings.json.gearbox.bak`.
 2. Enables autostart at Windows logon (`HKCU\...\Run`, no admin needed).
 3. Creates `~/.gearbox/config.yaml` and starts the proxy.
 
