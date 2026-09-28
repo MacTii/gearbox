@@ -1,0 +1,29 @@
+[project]
+name = "gearbox"
+version = "0.1.0"
+description = "Automatic Haiku / Sonnet / Opus gear shifting for Claude Code, based on prompt complexity"
+requires-python = ">=3.10"
+dependencies = [
+    "anthropic",
+    "fastapi",
+    "uvicorn",
+    "httpx",
+    "pyyaml",
+    "truststore",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio"]
+
+[project.scripts]
+gearbox = "gearbox.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["gearbox"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

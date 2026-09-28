@@ -1,0 +1,120 @@
+# gearbox configuration
+
+# Where requests are forwarded. Do NOT point this at the proxy itself.
+upstream: https://api.anthropic.com
+
+listen:
+  host: 127.0.0.1
+  port: 8080
+
+# Tiers from cheapest to most capable. "passthrough" = keep the model the client asked for
+# (so if Claude Code runs on Opus 5.5, the top tier stays Opus 5.5).
+tiers:
+  haiku: claude-haiku-4-5
+  sonnet: claude-sonnet-5
+  opus: passthrough
+
+# Only requests whose model contains one of these substrings are routed.
+# Claude Code's own background calls (titles, summaries) already use Haiku and pass through untouched.
+intercept_models: [opus, sonnet]
+
+# per_prompt   - classify every new user prompt (most savings, most cache misses)
+# upgrade_only - within a session the model can only go up (recommended)
+# sticky       - decide once on the first prompt of the session
+policy: upgrade_only
+
+# Used when heuristics are unsure and the judge is unavailable / fails.
+default_tier: sonnet
+
+# Requests larger than this (estimated tokens) are never sent to Haiku (200K context).
+haiku_max_context_tokens: 150000
+
+# If the rerouted request is rejected with 400, retry once with the original model.
+fallback_on_400: true
+
+# Fields removed from the body when routing to a given tier (Haiku 4.5 rejects adaptive thinking / effort).
+strip_fields:
+  haiku: [thinking, output_config.effort, context_management]
+
+# Output-token ceilings per tier; max_tokens is clamped when routing down (Claude Code asks for 128K).
+max_output_tokens:
+  haiku: 64000
+
+# Tiers that reject role:"system" inside messages (Sonnet 5, Haiku 4.5). Claude Code sends those,
+# so they are rewritten into <system-reminder> text blocks in the user turn.
+demote_system_messages: [haiku, sonnet]
+
+judge:
+  enabled: true
+  model: claude-haiku-4-5
+  timeout_seconds: 3.0
+  max_prompt_chars: 4000
+  # API key env var for the judge. Without it only heuristics are used.
+  api_key_env: GEARBOX_JUDGE_API_KEY
+
+heuristics:
+  opus_threshold: 3.0    # score >= this -> opus without asking the judge
+  haiku_threshold: -2.0  # score <= this -> haiku without asking the judge
+  # Word stems (matched at word start, case-insensitive) with weights.
+  opus_keywords:
+    architektur: 2.5
+    architect: 2.5
+    zaprojektuj: 2.5
+    zaprojektow: 2.5
+    design: 1.5
+    refaktor: 2.0
+    refactor: 2.0
+    migracj: 2.0
+    migrat: 2.0
+    przepisz: 1.5
+    rewrite: 1.5
+    współbieżn: 2.0
+    concurren: 2.0
+    race condition: 2.5
+    deadlock: 2.5
+    root cause: 2.0
+    przyczyn: 1.0
+    zdebuguj: 1.5
+    debug: 1.0
+    optymaliz: 1.5
+    optimi: 1.5
+    wydajnoś: 1.0
+    performance: 1.0
+    bezpieczeństw: 1.5
+    security: 1.5
+    trade-off: 1.5
+    kompromis: 1.0
+    przeanalizuj: 1.0
+    analyze: 1.0
+    zaplanuj: 1.5
+    plan: 0.5
+  haiku_keywords:
+    literówk: 3.0
+    typo: 3.0
+    wylistuj: 2.5
+    list all: 2.0
+    zmień nazwę: 2.0
+    rename: 2.0
+    sformatuj: 2.0
+    format: 1.0
+    przetłumacz: 2.0
+    translate: 2.0
+    dodaj komentarz: 1.5
+    add a comment: 1.5
+    commit: 1.5
+    co to jest: 1.5
+    what is: 1.0
+    pokaż: 1.0
+    show me: 1.0
+    uruchom testy: 1.5
+    run the tests: 1.5
+
+# USD per million tokens, for the "gearbox report" savings estimate only - never sent to the API.
+# Approximate as of writing; check https://claude.com/pricing and adjust if it drifts.
+pricing:
+  haiku:  {input: 1.00, output: 5.00}
+  sonnet: {input: 3.00, output: 15.00}
+  opus:   {input: 15.00, output: 75.00}
+
+# Relative paths are resolved against the directory holding this config file.
+log_file: decisions.jsonl
