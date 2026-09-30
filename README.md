@@ -20,14 +20,10 @@ of each request. A `SessionStart` hook only makes sure the proxy is running.
 ## Install
 
 ```powershell
-git clone https://github.com/MacTii/gearbox.git
-cd gearbox
-.\install.ps1
+irm https://raw.githubusercontent.com/MacTii/gearbox/main/install.ps1 | iex
 ```
 
-`install.ps1` creates a venv, installs gearbox into it, and runs `gearbox install` (below).
-The repo is private, so this stays two commands rather than a single `irm | iex` one-liner -
-that would need the install script to be fetchable without authentication.
+That's it. `install.ps1` creates a venv, installs gearbox into it, and runs `gearbox install` (below).
 
 `gearbox install`:
 1. Adds `env.ANTHROPIC_BASE_URL=http://127.0.0.1:8080` and a `SessionStart` hook to
